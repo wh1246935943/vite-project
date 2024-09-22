@@ -1,0 +1,40 @@
+# ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+
+name: Deploy vite-project Alibaba Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: yarn
+
+    - name: Build project
+      run: yarn build
+
+    - name: Setup SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add SSH known hosts
+      run: |
+        ssh-keyscan -H 8.137.114.19 >> ~/.ssh/known_hosts
+
+    - name: Deploy vite-project Alibaba Cloud
+      run: |
+        scp -r ./dist/* root@8.137.114.19:/www/wwwroot/www.resgoing.com/case/vite-project
